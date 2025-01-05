@@ -37,8 +37,8 @@ Szereted a SoundR-t? Támogass minket a [Ko-fi](https://ko-fi.com/rexolt) oldalo
 # ❓ Gyakran Ismételt Kérdések
 ## 1. Miért nem hallatszik a torzítás?
 
-    Győződj meg arról, hogy a megfelelő mikrofont és hangkimeneti eszközt választottad ki.
-    Ellenőrizd, hogy a VB-Cable vagy VoiceMeeter megfelelően van konfigurálva.
+Győződj meg arról, hogy a megfelelő mikrofont és hangkimeneti eszközt választottad ki.
+Ellenőrizd, hogy a VB-Cable vagy VoiceMeeter megfelelően van konfigurálva.
 
 ## 2. Mely platformokat támogatja az alkalmazás?
 
