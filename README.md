@@ -20,3 +20,34 @@
 ```bash
 git clone https://github.com/<felhasználónév>/soundr.git
 cd soundr
+```
+## 2. Telepítsd a függőségeket
+```bash
+npm install
+```
+## 3. Indítsd el az alkalmazást
+```bash
+npm start
+```
+
+## 🔗 Támogatás
+
+Szereted a SoundR-t? Támogass minket a Ko-fi oldalon, hogy tovább fejleszthessük az alkalmazást! ❤️
+
+# ❓ Gyakran Ismételt Kérdések
+## 1. Miért nem hallatszik a torzítás?
+
+    Győződj meg arról, hogy a megfelelő mikrofont és hangkimeneti eszközt választottad ki.
+    Ellenőrizd, hogy a VB-Cable vagy VoiceMeeter megfelelően van konfigurálva.
+
+## 2. Mely platformokat támogatja az alkalmazás?
+
+  A SoundR Windows, macOS és Linux rendszereken futtatható.
+
+## 3. Hogyan adhatok hozzá egyedi torzítást?
+
+  Válaszd az Egyedi opciót a torzítás típusánál, és állítsd be a csúszkával a kívánt torzítás mértékét.
+
+## 🌟 Fejlesztők
+
+A SoundR-t a Rexolt hozta létre. Köszönjük, hogy használod az alkalmazást! 😊
