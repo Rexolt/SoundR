@@ -32,7 +32,7 @@ npm start
 
 ## 🔗 Támogatás
 
-Szereted a SoundR-t? Támogass minket a Ko-fi oldalon, hogy tovább fejleszthessük az alkalmazást! ❤️
+Szereted a SoundR-t? Támogass minket a [Ko-fi](https://ko-fi.com/rexolt) oldalon, hogy tovább fejleszthessük az alkalmazást! ❤️
 
 # ❓ Gyakran Ismételt Kérdések
 ## 1. Miért nem hallatszik a torzítás?
