@@ -1,0 +1,1566 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SoundR: Hangtorzító és Soundpad</title>
+  <!-- Google Font -->
+  <link rel="preconnect" href="https://fonts.gstatic.com" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@300;400;600;700;800&display=swap"
+    rel="stylesheet"
+  />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Sixtyfour&display=swap" rel="stylesheet" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,200..1000;1,200..1000&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inconsolata:wght@200..900&display=swap" rel="stylesheet">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Exo+2:ital,wght@0,100..900;1,100..900&display=swap" rel="stylesheet">
+
+
+  <style>
+    /*******************************************************
+     ******************* ALAP STÍLUSOK *********************
+     *******************************************************/
+    * {
+      box-sizing: border-box;
+      font-family: "Exo 2", serif;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      background: #101010;
+      color: #f0f0f0;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
+      overflow: hidden; /* a betöltéskori overlay-hez */
+    }
+
+    /*******************************************************
+     ******************* INTRO OVERLAY  ********************
+     *******************************************************/
+    #intro-overlay {
+      position: fixed;
+      top: 0; 
+      left: 0; 
+      width: 100%; 
+      height: 100%;
+      background: #101010;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 9999;
+      opacity: 1;
+      transition: opacity 1s ease;
+    }
+    #intro-overlay.hide {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    #intro-text {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: "Sixtyfour", serif;
+      font-size: 3rem;
+      color: #fff;
+      text-transform: uppercase;
+      letter-spacing: 3px;
+      overflow: hidden;
+      border-right: 0.15em solid orange;
+      white-space: nowrap;
+      width: 0ch; /* induláskor */
+      /* 6 karakter: SoundR → steps(6, end) */
+      animation: 
+        typing 2.5s steps(6, end) forwards,
+        blink 0.75s step-end infinite alternate,
+        floatToTop 1s ease 3s forwards; /* 3s-nál indul, 1s-ig tart */
+    }
+
+    @keyframes typing {
+      from { width: 0ch; }
+      to   { width: 7ch; }
+    }
+    @keyframes blink {
+      50% { border-color: transparent; }
+    }
+    @keyframes floatToTop {
+      0% {
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+      100% {
+        top: 12%;
+        transform: translate(-50%, 0);
+      }
+    }
+
+    /*******************************************************
+     ******************* HEADER ****************************
+     *******************************************************/
+    header {
+      background: linear-gradient(45deg, rgba(255,255,255,0.05), rgba(255,255,255,0.15));
+      -webkit-backdrop-filter: blur(8px);
+      backdrop-filter: blur(8px);
+      padding: 20px;
+      text-align: center;
+      font-size: 1.6rem;
+      border-bottom: 1px solid #333;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #fff;
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    #discord-btn {
+      position: absolute;
+      right: 20px;
+      top: 20px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      transition: background 0.2s, transform 0.2s;
+    }
+    #support-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: scale(1.05);
+    }
+
+    #support-btn {
+      position: absolute;
+      right: 130px;
+      top: 20px;
+      background: rgba(255,255,255,0.2);
+      border: none;
+      color: #fff;
+      padding: 8px 14px;
+      border-radius: 6px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.9rem;
+      transition: background 0.2s, transform 0.2s;
+    }
+    #support-btn:hover {
+      background: rgba(255,255,255,0.3);
+      transform: scale(1.05);
+    }
+
+    /*******************************************************
+     ******************* MAIN / NAV ************************
+     *******************************************************/
+    main {
+      flex: 1;
+      display: flex;
+      overflow: hidden;
+    }
+    nav {
+      min-width: 220px;
+      background: rgba(255,255,255,0.03);
+      border-right: 1px solid #333;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      padding: 10px;
+      backdrop-filter: blur(12px);
+    }
+    nav button {
+      background: rgba(255,255,255,0.05);
+      border: none;
+      color: #ffffff;
+      font-size: 1rem;
+      margin: 6px 0;
+      padding: 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out, transform 0.2s;
+    }
+    nav button:hover {
+      background-color: rgba(255,255,255,0.15);
+      transform: scale(1.02);
+    }
+    nav button.active {
+      background-color: #007bff;
+    }
+
+    /*******************************************************
+     ******************* SZEKCIÓK ANIMÁCIÓJA ***************
+     *******************************************************/
+    section {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: none;
+      animation: fadeIn 0.4s ease, slideInUp 0.4s ease;
+    }
+    section.active {
+      display: block;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+    @keyframes slideInUp {
+      from {
+        transform: translateY(10px);
+      }
+      to {
+        transform: translateY(0);
+      }
+    }
+
+    /*******************************************************
+     ******************* FORM + SELECT *********************
+     *******************************************************/
+    .form-group {
+      margin-bottom: 1em;
+      max-width: 600px;
+    }
+    .form-group label {
+      display: block;
+      margin-bottom: 0.25em;
+      font-weight: 600;
+    }
+    select, input[type="range"], input[type="text"], input[type="file"], textarea {
+      width: 100%;
+      border-radius: 4px;
+      padding: 8px;
+      border: 1px solid #444;
+      background-color: rgba(255,255,255,0.07) !important;
+      color: #fff;
+      outline: none;
+      -webkit-text-fill-color: #ffffff; 
+      appearance: none; 
+      -webkit-appearance: none;
+    }
+    select::-ms-expand {
+      display: none; 
+    }
+    select::-webkit-dropdown-content,
+    select::-webkit-selection,
+    select::-webkit-inner-spin-button { 
+      background: #222 !important; 
+      color: #fff !important;
+    }
+
+    select {
+  background-color: #222 !important;
+  color: #fff !important;
+  /* Esetleg: */
+  border: 1px solid #444;
+  appearance: none;        /* Safari/Chrome */
+  -webkit-appearance: none;/* Safari/Chrome */
+  -moz-appearance: none;   /* Firefox */
+}
+
+option {
+  background-color: #222 !important;
+  color: #fff !important;
+}
+
+    textarea {
+      resize: vertical;
+      min-height: 60px;
+      max-height: 200px;
+    }
+
+    /*******************************************************
+     ******************** GOMB STÍLUS **********************
+     *******************************************************/
+    button.primary {
+      background-color: #007bff;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 1rem;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.2s;
+    }
+    button.primary:hover {
+      background-color: #005bb3;
+      transform: scale(1.05);
+    }
+    button.secondary {
+      background-color: rgba(255,255,255,0.2);
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      margin-left: 10px;
+      cursor: pointer;
+      transition: background-color 0.2s, transform 0.2s;
+    }
+    button.secondary:hover {
+      background-color: rgba(255,255,255,0.3);
+      transform: scale(1.05);
+    }
+
+    /*******************************************************
+     ******************* TORZÍTÓ SECTION *******************
+     *******************************************************/
+    #status {
+      margin-top: 20px;
+      font-size: 1.1rem;
+      min-height: 30px;
+    }
+
+    /*******************************************************
+     ******************* SOUNDPAD SECTION *******************
+     * (hangkártyák, preview, szerkesztés, stb.)
+     *******************************************************/
+    .soundpad-container {
+      margin-top: 20px;
+    }
+    .soundpad-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+    .sound-card {
+      background: rgba(255,255,255,0.05);
+      backdrop-filter: blur(8px);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 8px;
+      padding: 10px;
+      transition: background-color 0.2s, transform 0.2s, box-shadow 0.2s;
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .sound-card:hover {
+      background-color: rgba(255,255,255,0.1);
+      transform: scale(1.02);
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .sound-card-header {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+    .sound-card-header img {
+      max-width: 64px;
+      max-height: 64px;
+    }
+    .sound-card-title {
+      font-weight: 600;
+      font-size: 1.1rem;
+    }
+    .sound-card-desc {
+      font-size: 0.9rem;
+      opacity: 0.8;
+      margin-bottom: 10px;
+    }
+    .sound-card-buttons {
+      margin-top: auto;
+      display: flex;
+      gap: 6px;
+    }
+    .btn-icon {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /*******************************************************
+     ******************* ADD SOUND FORM ********************
+     *******************************************************/
+    #add-sound-form {
+      display: none;
+      padding: 15px;
+      background-color: rgba(255,255,255,0.05);
+      border-radius: 8px;
+      border: 1px solid #333;
+      max-width: 600px;
+      animation: fadeIn 0.3s ease;
+    }
+    #add-sound-form.active {
+      display: block;
+    }
+    #add-sound-form h3 {
+      margin-top: 0;
+      margin-bottom: 0.5em;
+    }
+    .preview-img {
+      margin-top: 5px;
+      max-width: 100px;
+      max-height: 100px;
+      border: 1px solid #444;
+      border-radius: 4px;
+    }
+
+    /*******************************************************
+     ****************** SETTINGS SECTION ********************
+     *******************************************************/
+    .settings-section {
+      max-width: 600px;
+    }
+
+    h3 {
+      font-family: "Sixtyfour", serif;
+    }
+  </style>
+</head>
+<body>
+  <!-- INTRO OVERLAY -->
+  <div id="intro-overlay">
+    <div id="intro-text">SoundR</div>
+  </div>
+
+  <header>
+    <h3>SoundR</h3>
+    <button id="discord-btn">
+      <img
+        src="https://cdn-icons-png.flaticon.com/512/5968/5968756.png"
+        alt="Discord"
+        width="24"
+        height="24"
+      />
+      Discord
+    </button>
+    <button id="support-btn">
+      <img
+        src="https://i.imgur.com/aRIKdTL.png"
+        alt="support"
+        width="24"
+        height="24"
+      />
+      Támogatás
+    </button>
+  </header>
+
+  <main>
+    <nav>
+      <button id="nav-distortion" class="active">Hangtorzító</button>
+      <button id="nav-soundpad">Soundpad</button>
+      <button id="nav-settings">Beállítások</button>
+    </nav>
+
+    <!-- HANGTORZÍTÓ SZEKCIÓ -->
+    <section id="distortion-section" class="active">
+      <h2>Hangtorzító</h2>
+
+      <div class="form-group">
+        <label for="distortion-type">Torzítás típusa:</label>
+        <select id="distortion-type">
+          <option value="robot">Robot hang</option>
+          <option value="deep">Mély hang (pitch shift)</option>
+          <option value="chipmunk">Chipmunk hang</option>
+          <option value="alien">Alien hang</option>
+          <option value="radio">Rádió hang</option>
+          <option value="echo">Echo (Visszhang)</option>
+          <option value="custom">Egyedi (WaveShaper)</option>
+        </select>
+      </div>
+
+      <div class="form-group">
+        <label for="audio-input">Mikrofon:</label>
+        <select id="audio-input"></select>
+      </div>
+
+      <div class="form-group">
+        <label for="audio-output">Hangkimeneti eszköz (torzított hang):</label>
+        <select id="audio-output"></select>
+      </div>
+
+      <!-- Egyedi torzítás (WaveShaper) -->
+      <div id="custom-settings" class="form-group" style="display:none;">
+        <h3>Egyedi torzítás (WaveShaper)</h3>
+        <label for="distortion-amount">Torzítás mértéke:</label>
+        <input type="range" id="distortion-amount" min="1" max="500" value="250" />
+      </div>
+
+      <div class="form-group">
+        <button id="apply-distortion" class="primary">Torzítás alkalmazása</button>
+        <button id="disable-distortion" class="secondary">Torzítás kikapcsolása</button>
+      </div>
+
+      <div id="status">
+        <p>Torzítás állapota: <span id="status-text">Nincs aktiválva</span></p>
+      </div>
+    </section>
+
+    <!-- SOUNDPAD SZEKCIÓ -->
+    <section id="soundpad-section">
+      <h2>Soundpad</h2>
+      <p>
+        Itt két kimeneti eszközt választhatsz: egyet Preview-hez (csak te hallod), és egyet
+        “Éles” (pl. VB-Cable, hogy a hívásban menjen).<br />
+        Illetve hozzáadhatsz hangokat, képeket (web v. lokális), szerkeszthetsz, törölhetsz.
+      </p>
+
+      <div class="form-group">
+        <label for="soundpad-preview-output">Preview kimeneti eszköz:</label>
+        <select id="soundpad-preview-output"></select>
+      </div>
+      <div class="form-group">
+        <label for="soundpad-output">Éles kimeneti eszköz:</label>
+        <select id="soundpad-output"></select>
+      </div>
+
+      <button id="toggle-add-sound-btn" class="primary">Új hang hozzáadása</button>
+
+      <!-- Új hang hozzáadása / Szerkesztése Form -->
+      <div id="add-sound-form">
+        <h3 id="add-sound-form-title">Új hang hozzáadása</h3>
+
+        <div class="form-group">
+          <label for="sound-title">Cím:</label>
+          <input type="text" id="sound-title" placeholder="Pl. Vicces hang" maxlength="50" />
+        </div>
+
+        <div class="form-group">
+          <label for="sound-desc">Leírás (max 200 karakter):</label>
+          <textarea
+            id="sound-desc"
+            rows="3"
+            maxlength="200"
+            placeholder="Rövid leírás a hangról..."
+          ></textarea>
+        </div>
+
+        <!-- Kép forrás: web / lokális -->
+        <div class="form-group">
+          <label>Kép forrása:</label>
+          <div>
+            <label><input type="radio" name="imageSource" value="web" checked /> Web</label>
+            <label style="margin-left: 1rem;"
+              ><input type="radio" name="imageSource" value="local" /> Lokális</label
+            >
+          </div>
+          <div class="form-group" id="image-web-group">
+            <label for="sound-img">Kép URL (web):</label>
+            <input type="text" id="sound-img" placeholder="http://..." />
+          </div>
+          <div class="form-group" id="image-local-group" style="display:none;">
+            <label for="sound-img-file">Kép feltöltése (lokális):</label>
+            <input type="file" id="sound-img-file" accept="image/*" />
+            <img id="img-preview" class="preview-img" alt="előnézet" />
+          </div>
+        </div>
+
+        <!-- Hang forrás: web / lokális -->
+        <div class="form-group">
+          <label>Hang forrása:</label>
+          <div>
+            <label><input type="radio" name="soundSource" value="web" checked /> Web</label>
+            <label style="margin-left: 1rem;"
+              ><input type="radio" name="soundSource" value="local" /> Lokális</label
+            >
+          </div>
+          <div class="form-group" id="sound-web-group">
+            <label for="sound-url">Hang URL (web):</label>
+            <input type="text" id="sound-url" placeholder="http://..." />
+          </div>
+          <div class="form-group" id="sound-local-group" style="display:none;">
+            <label for="sound-file">Hangfájl feltöltése:</label>
+            <input type="file" id="sound-file" accept="audio/*" />
+          </div>
+        </div>
+
+        <div class="form-group">
+          <button id="save-sound-button" class="primary">Hozzáadás</button>
+          <button id="cancel-edit-button" class="secondary" style="display:none;">Mégse</button>
+        </div>
+      </div>
+
+      <div class="soundpad-container">
+        <div class="soundpad-grid" id="soundpad-grid"></div>
+      </div>
+    </section>
+
+    <!-- BEÁLLÍTÁSOK SZEKCIÓ -->
+    <section id="settings-section">
+      <div class="settings-section">
+        <h2>Beállítások</h2>
+        <p>
+          Itt lehet különböző beállításokat módosítani, amelyek localStorage-be elmentődnek.
+        </p>
+
+        <div class="form-group">
+          <label for="app-theme">Téma:</label>
+          <select id="app-theme">
+            <option value="dark">Sötét</option>
+            <option value="light">Világos</option>
+            <option value="auto">Automatikus</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="app-lang">Nyelv:</label>
+          <select id="app-lang">
+            <option value="hu">Magyar</option>
+            <option value="en">Angol</option>
+            <option value="de">Német</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="app-animation">UI Animációk:</label>
+          <select id="app-animation">
+            <option value="on">Engedélyezve</option>
+            <option value="off">Letiltva</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label for="app-discordauto">Automatikus Discord csatlakozás:</label>
+          <select id="app-discordauto">
+            <option value="off">Kikapcsolva</option>
+            <option value="on">Bekapcsolva</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <button id="save-settings-btn" class="primary">Mentés</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    /***********************************************************************
+     * INDULÁSKOR
+     ***********************************************************************/
+    window.addEventListener('DOMContentLoaded', async () => {
+      // 1) Intro overlay animáció
+      setTimeout(() => {
+        const overlay = document.getElementById('intro-overlay');
+        overlay.classList.add('hide');
+        setTimeout(() => {
+          overlay.style.display = 'none';
+        }, 1000);
+      }, 3500);
+
+      // 2) Töltjük a valós eszközlistát
+      await fillRealDevices();
+
+      // 3) Betöltjük a beállításokat, custom hangokat, SoundPadet
+      loadSettings();
+      loadCustomSoundsFromStorage();
+      renderSoundpad();
+    });
+
+    /***********************************************************************
+     * DISCORD GOMB
+     ***********************************************************************/
+    const discordBtn = document.getElementById('discord-btn');
+    discordBtn.addEventListener('click', () => {
+      window.open('https://discord.gg/XnvMkUncSu', '_blank');
+    });
+
+    /***********************************************************************
+     * NAVIGÁCIÓ (Hangtorzító / Soundpad / Beállítások)
+     ***********************************************************************/
+    const navDistortionButton = document.getElementById('nav-distortion');
+    const navSoundpadButton = document.getElementById('nav-soundpad');
+    const navSettingsButton = document.getElementById('nav-settings');
+    const distortionSection = document.getElementById('distortion-section');
+    const soundpadSection = document.getElementById('soundpad-section');
+    const settingsSection = document.getElementById('settings-section');
+
+    navDistortionButton.addEventListener('click', () => {
+      navDistortionButton.classList.add('active');
+      navSoundpadButton.classList.remove('active');
+      navSettingsButton.classList.remove('active');
+      distortionSection.classList.add('active');
+      soundpadSection.classList.remove('active');
+      settingsSection.classList.remove('active');
+    });
+    navSoundpadButton.addEventListener('click', () => {
+      navSoundpadButton.classList.add('active');
+      navDistortionButton.classList.remove('active');
+      navSettingsButton.classList.remove('active');
+      soundpadSection.classList.add('active');
+      distortionSection.classList.remove('active');
+      settingsSection.classList.remove('active');
+    });
+    navSettingsButton.addEventListener('click', () => {
+      navSettingsButton.classList.add('active');
+      navDistortionButton.classList.remove('active');
+      navSoundpadButton.classList.remove('active');
+      settingsSection.classList.add('active');
+      distortionSection.classList.remove('active');
+      soundpadSection.classList.remove('active');
+    });
+
+    /***********************************************************************
+     * ESZKÖZLISTA: MIKROFONOK, HANGKIMENETEK
+     ***********************************************************************/
+    const audioInput = document.getElementById('audio-input');
+    const audioOutput = document.getElementById('audio-output');
+
+    const soundpadPreviewOutputSelect = document.getElementById('soundpad-preview-output');
+    const soundpadOutputSelect = document.getElementById('soundpad-output');
+
+    async function fillRealDevices() {
+      console.log("fillRealDevices() meghívva...");
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        console.log("Eszközök lekérdezve:", devices);
+
+        audioInput.innerHTML = '';
+        audioOutput.innerHTML = '';
+        soundpadPreviewOutputSelect.innerHTML = '';
+        soundpadOutputSelect.innerHTML = '';
+
+        const audioInputs = devices.filter(d => d.kind === 'audioinput');
+        const audioOutputs = devices.filter(d => d.kind === 'audiooutput');
+
+        // Mikrofonok (audioInput)
+        if (audioInputs.length === 0) {
+          const noMicOption = document.createElement('option');
+          noMicOption.value = '';
+          noMicOption.textContent = 'Nincs mikrofon';
+          audioInput.appendChild(noMicOption);
+        } else {
+          audioInputs.forEach(device => {
+            const option = document.createElement('option');
+            option.value = device.deviceId;
+            option.textContent = device.label || `Mikrofon (${device.deviceId})`;
+            audioInput.appendChild(option);
+          });
+        }
+
+        // Hangkimenetek (audioOutput, soundpadPreviewOutput, soundpadOutput)
+        if (audioOutputs.length === 0) {
+          const noOutOption = document.createElement('option');
+          noOutOption.value = '';
+          noOutOption.textContent = 'Nincs hangkimenet';
+          audioOutput.appendChild(noOutOption);
+
+          const noPrevOutOption = document.createElement('option');
+          noPrevOutOption.value = '';
+          noPrevOutOption.textContent = 'Nincs hangkimenet';
+          soundpadPreviewOutputSelect.appendChild(noPrevOutOption);
+
+          const noMainOutOption = document.createElement('option');
+          noMainOutOption.value = '';
+          noMainOutOption.textContent = 'Nincs hangkimenet';
+          soundpadOutputSelect.appendChild(noMainOutOption);
+
+        } else {
+          audioOutputs.forEach(device => {
+            // 1) Hangtorzító kimenet
+            const outOption = document.createElement('option');
+            outOption.value = device.deviceId;
+            outOption.textContent = device.label || `Hangkimenet (${device.deviceId})`;
+            audioOutput.appendChild(outOption);
+
+            // 2) Soundpad Preview
+            const prevOption = document.createElement('option');
+            prevOption.value = device.deviceId;
+            prevOption.textContent = device.label || `Hangkimenet (${device.deviceId})`;
+            soundpadPreviewOutputSelect.appendChild(prevOption);
+
+            // 3) Soundpad Éles
+            const mainOption = document.createElement('option');
+            mainOption.value = device.deviceId;
+            mainOption.textContent = device.label || `Hangkimenet (${device.deviceId})`;
+            soundpadOutputSelect.appendChild(mainOption);
+          });
+        }
+
+      } catch (err) {
+        console.error("Eszközlista lekérdezés hiba:", err);
+      }
+    }
+
+    /***********************************************************************
+     * HANGTORZÍTÓ (pitch shift, ring mod, waveshaper)
+     ***********************************************************************/
+    const distortionType = document.getElementById('distortion-type');
+    const applyDistortionButton = document.getElementById('apply-distortion');
+    const disableDistortionButton = document.getElementById('disable-distortion');
+    const statusText = document.getElementById('status-text');
+    const customSettings = document.getElementById('custom-settings');
+    const distortionAmountInput = document.getElementById('distortion-amount');
+
+    let audioContext = null;
+    let audioElement = null;
+    let currentStream = null;
+    let ringModOsc = null;
+
+    // AudioWorklet pitch shift demó
+    const pitchShiftWorklet = `
+      class PitchShiftProcessor extends AudioWorkletProcessor {
+        constructor() {
+          super();
+          this.pitchRatio = 0.7; 
+        }
+        process(inputs, outputs) {
+          const input = inputs[0];
+          const output = outputs[0];
+          if (!input[0] || !output[0]) return true;
+          for (let ch=0; ch<input[0].length; ch++) {
+            const inChan = input[0][ch];
+            const outChan = output[0][ch];
+            for (let i=0; i<outChan.length; i++) {
+              let idx = Math.floor(i*this.pitchRatio);
+              outChan[i] = (idx<inChan.length)? inChan[idx] : 0;
+            }
+          }
+          return true;
+        }
+      }
+      registerProcessor('pitch-shift-processor', PitchShiftProcessor);
+    `;
+
+    distortionType.addEventListener('change', () => {
+      customSettings.style.display = (distortionType.value === 'custom') ? 'block' : 'none';
+    });
+
+    applyDistortionButton.addEventListener('click', enableDistortion);
+    disableDistortionButton.addEventListener('click', disableDistortion);
+
+    async function enableDistortion() {
+      console.log("enableDistortion() meghívva.");
+      if (!audioInput.value || !audioOutput.value) {
+        statusText.textContent = "Kérlek válassz mikrofont és kimeneti eszközt!";
+        statusText.style.color = "red";
+        console.log("Nincs kiválasztott mikrofon/kimenet!");
+        return;
+      }
+
+      cleanupAudio();
+
+      // getUserMedia (mikrofon)
+      try {
+        console.log("getUserMedia deviceId=", audioInput.value);
+        currentStream = await navigator.mediaDevices.getUserMedia({
+          audio: { deviceId: { exact: audioInput.value } }
+        });
+        console.log("getUserMedia sikeres, stream:", currentStream);
+      } catch(e) {
+        console.error("getUserMedia hiba:", e);
+        statusText.textContent = "getUserMedia hiba: " + e.message;
+        statusText.style.color = "red";
+        return;
+      }
+
+      // Effekt-lánc
+      let destinationNode;
+      try {
+        destinationNode = await createEffectChain(currentStream, distortionType.value);
+        console.log("createEffectChain lefutott.");
+      } catch(e) {
+        console.error("createEffectChain hiba:", e);
+        statusText.textContent = "Hiba az effekt-láncban: " + e.message;
+        statusText.style.color = "red";
+        return;
+      }
+
+      // Audio elem
+      audioElement = new Audio();
+      audioElement.srcObject = destinationNode.stream;
+
+      // setSinkId -> hangkimenet
+      if (audioElement.setSinkId) {
+        try {
+          await audioElement.setSinkId(audioOutput.value);
+          console.log("Audio sink beállítva:", audioOutput.value);
+        } catch(e) {
+          console.error("setSinkId hiba:", e);
+        }
+      }
+
+      // Lejátszás
+      audioElement.play().then(() => {
+        statusText.textContent = `Torzítás aktiválva: ${distortionType.value}`;
+        statusText.style.color = "green";
+        console.log("Lejátszás sikeres, torzítás aktív.");
+      }).catch(err => {
+        console.error("Lejátszás hiba:", err);
+        statusText.textContent = "Hiba a lejátszás során: " + err.message;
+        statusText.style.color = "red";
+      });
+    }
+
+    async function createEffectChain(stream, effectType) {
+      console.log("createEffectChain()", effectType);
+      audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(stream);
+
+      // Deep pitch shift AudioWorklet
+      if (effectType === 'deep') {
+        try {
+          await audioContext.audioWorklet.addModule(
+            URL.createObjectURL(new Blob([pitchShiftWorklet], {type: 'application/javascript'}))
+          );
+        } catch(e) { console.error("Pitch shift betöltés hiba:", e); }
+      }
+
+      const destinationNode = audioContext.createMediaStreamDestination();
+      let lastNode = source;
+
+      switch(effectType) {
+        case 'robot': {
+          // ring mod
+          const modGain = audioContext.createGain();
+          modGain.gain.value = 0.5;
+          ringModOsc = audioContext.createOscillator();
+          ringModOsc.frequency.value = 100;
+          ringModOsc.connect(modGain.gain);
+          ringModOsc.start();
+          lastNode.connect(modGain);
+          modGain.connect(destinationNode);
+          break;
+        }
+        case 'deep': {
+          // pitch shift worklet
+          const pitchNode = new AudioWorkletNode(audioContext, 'pitch-shift-processor');
+          lastNode.connect(pitchNode).connect(destinationNode);
+          break;
+        }
+        case 'chipmunk': {
+          // highshelf + ring mod
+          const shelfFilter = audioContext.createBiquadFilter();
+          shelfFilter.type = 'highshelf';
+          shelfFilter.frequency.value = 2000;
+          shelfFilter.gain.value = 15;
+          lastNode.connect(shelfFilter);
+
+          const modGain = audioContext.createGain();
+          modGain.gain.value = 0.3;
+          ringModOsc = audioContext.createOscillator();
+          ringModOsc.frequency.value = 600;
+          ringModOsc.connect(modGain.gain);
+          ringModOsc.start();
+
+          shelfFilter.connect(modGain);
+          modGain.connect(destinationNode);
+          break;
+        }
+        case 'alien': {
+          // bandpass + ring mod
+          const bandpass = audioContext.createBiquadFilter();
+          bandpass.type = 'bandpass';
+          bandpass.frequency.value = 800;
+          bandpass.Q.value = 8;
+          lastNode.connect(bandpass);
+
+          ringModOsc = audioContext.createOscillator();
+          const modGain = audioContext.createGain();
+          modGain.gain.value = 0.5;
+          ringModOsc.frequency.value = 40;
+          ringModOsc.connect(modGain.gain);
+          ringModOsc.start();
+
+          bandpass.connect(modGain);
+          modGain.connect(destinationNode);
+          break;
+        }
+        case 'radio': {
+          // bandpass + waveshaper
+          const radioFilter = audioContext.createBiquadFilter();
+          radioFilter.type = 'bandpass';
+          radioFilter.frequency.value = 1000;
+          radioFilter.Q.value = 6;
+          const radioShaper = audioContext.createWaveShaper();
+          radioShaper.curve = makeDistortionCurve(50);
+          radioShaper.oversample = '2x';
+          lastNode.connect(radioFilter);
+          radioFilter.connect(radioShaper);
+          radioShaper.connect(destinationNode);
+          break;
+        }
+        case 'echo': {
+          // Delay + feedback
+          const delayNode = audioContext.createDelay(5.0);
+          delayNode.delayTime.value = 0.3;
+          const feedbackGain = audioContext.createGain();
+          feedbackGain.gain.value = 0.4;
+          lastNode.connect(delayNode);
+          delayNode.connect(feedbackGain);
+          feedbackGain.connect(delayNode);
+          delayNode.connect(destinationNode);
+          break;
+        }
+        case 'custom': {
+          // WaveShaper
+          const amount = parseInt(distortionAmountInput.value) || 250;
+          const waveShaper = audioContext.createWaveShaper();
+          waveShaper.curve = makeDistortionCurve(amount);
+          waveShaper.oversample = '4x';
+          lastNode.connect(waveShaper);
+          waveShaper.connect(destinationNode);
+          break;
+        }
+        default: {
+          // Tiszta hang
+          lastNode.connect(destinationNode);
+        }
+      }
+      return destinationNode;
+    }
+
+    function makeDistortionCurve(amount) {
+      const n_samples = 44100;
+      const curve = new Float32Array(n_samples);
+      const deg = Math.PI / 180;
+      for (let i=0; i<n_samples; i++) {
+        const x = (i*2/n_samples)-1;
+        curve[i] = ((3 + amount) * x * 20 * deg) / (Math.PI + amount * Math.abs(x));
+      }
+      return curve;
+    }
+
+    async function disableDistortion() {
+      console.log("disableDistortion() meghívva.");
+      cleanupAudio();
+
+      if (!audioInput.value || !audioOutput.value) {
+        statusText.textContent = "Nincs kiválasztott mikrofon vagy kimenet!";
+        statusText.style.color = "red";
+        console.log("Nincs kiválasztott mikrofon/kimenet a tiszta hanghoz sem.");
+        return;
+      }
+
+      try {
+        currentStream = await navigator.mediaDevices.getUserMedia({
+          audio: { deviceId: { exact: audioInput.value } }
+        });
+        console.log("Tiszta getUserMedia siker:", currentStream);
+      } catch(e) {
+        console.error("Tiszta getUserMedia hiba:", e);
+        statusText.textContent = "Tiszta getUserMedia hiba: " + e.message;
+        statusText.style.color = "red";
+        return;
+      }
+
+      audioContext = new AudioContext();
+      const source = audioContext.createMediaStreamSource(currentStream);
+      const destinationNode = audioContext.createMediaStreamDestination();
+      source.connect(destinationNode);
+
+      audioElement = new Audio();
+      audioElement.srcObject = destinationNode.stream;
+
+      if (audioElement.setSinkId) {
+        try {
+          await audioElement.setSinkId(audioOutput.value);
+        } catch(e) {
+          console.error("setSinkId hiba tiszta hangnál:", e);
+        }
+      }
+
+      audioElement.play().then(()=>{
+        statusText.textContent = "Torzítás kikapcsolva (tiszta hang).";
+        statusText.style.color = "white";
+        console.log("Tiszta hang sikeresen lejátszva.");
+      }).catch(err=>{
+        console.error("Lejátszás hiba tiszta hangnál:", err);
+        statusText.textContent = "Hiba a tiszta hang lejátszás során: " + err.message;
+        statusText.style.color = "red";
+      });
+    }
+
+    function cleanupAudio() {
+      console.log("cleanupAudio() hívva.");
+      if (audioElement) {
+        try { audioElement.pause(); } catch(e){}
+        audioElement.srcObject = null;
+        audioElement = null;
+      }
+      if (ringModOsc) {
+        try { ringModOsc.stop(); ringModOsc.disconnect(); } catch(e){}
+        ringModOsc = null;
+      }
+      if (audioContext) {
+        try { audioContext.close(); } catch(e){}
+        audioContext = null;
+      }
+      if (currentStream) {
+        currentStream.getTracks().forEach(track => track.stop());
+        currentStream = null;
+      }
+    }
+
+    /***********************************************************************
+     * SOUNDPAD: Preview / Éles kimenet, saját hangok
+     ***********************************************************************/
+    const soundpadGrid = document.getElementById('soundpad-grid');
+    const toggleAddSoundBtn = document.getElementById('toggle-add-sound-btn');
+    const addSoundForm = document.getElementById('add-sound-form');
+    const addSoundFormTitle = document.getElementById('add-sound-form-title');
+    const saveSoundButton = document.getElementById('save-sound-button');
+    const cancelEditButton = document.getElementById('cancel-edit-button');
+
+    const soundTitleInput = document.getElementById('sound-title');
+    const soundDescInput = document.getElementById('sound-desc');
+    const soundImgInput = document.getElementById('sound-img');
+    const soundImgFileInput = document.getElementById('sound-img-file');
+    const imgPreview = document.getElementById('img-preview');
+    const soundUrlInput = document.getElementById('sound-url');
+    const soundFileInput = document.getElementById('sound-file');
+
+    const imageWebRadio = document.querySelector('input[name="imageSource"][value="web"]');
+    const imageLocalRadio = document.querySelector('input[name="imageSource"][value="local"]');
+    const imageWebGroup = document.getElementById('image-web-group');
+    const imageLocalGroup = document.getElementById('image-local-group');
+
+    const soundWebRadio = document.querySelector('input[name="soundSource"][value="web"]');
+    const soundLocalRadio = document.querySelector('input[name="soundSource"][value="local"]');
+    const soundWebGroup = document.getElementById('sound-web-group');
+    const soundLocalGroup = document.getElementById('sound-local-group');
+
+    let customSounds = [];
+    let isEditing = false;
+    let editingSoundId = null;
+
+    // Alapértelmezett hangok
+    const DEFAULT_SOUNDS = [
+      {
+        id: "taps",
+        title: "Kattintás",
+        desc: "Kattintás hang",
+        img: "https://cdn-icons-png.flaticon.com/512/1828/1828640.png",
+        url: "https://www.fesliyanstudios.com/play-mp3/387"
+      },
+      {
+        id: "nevetes",
+        title: "Glugy Glugy Glugy",
+        desc: "Glugy glugy glugy hang",
+        img: "https://cdn-icons-png.flaticon.com/512/742/742751.png",
+        url: "https://www.fesliyanstudios.com/play-mp3/3874"
+      },
+      {
+        id: "airhorn",
+        title: "Úr isten",
+        desc: "Nem tudom milyen hang ez...",
+        img: "https://cdn-icons-png.flaticon.com/512/5719/5719887.png",
+        url: "https://www.fesliyanstudios.com/play-mp3/6204"
+      },
+      {
+        id: "boing",
+        title: "Üvegtörés",
+        desc: "Üvegtörés hang",
+        img: "https://cdn-icons-png.flaticon.com/512/1506/1506459.png",
+        url: "https://www.fesliyanstudios.com/play-mp3/3877"
+      }
+    ];
+
+    function loadCustomSoundsFromStorage() {
+      try {
+        const data = localStorage.getItem('customSounds');
+        if (data) {
+          customSounds = JSON.parse(data);
+        } else {
+          customSounds = [];
+        }
+      } catch(e) {
+        console.error("Hiba customSounds betöltés", e);
+        customSounds = [];
+      }
+    }
+    function saveCustomSoundsToStorage() {
+      try {
+        localStorage.setItem('customSounds', JSON.stringify(customSounds));
+      } catch(e) {
+        console.error("Hiba customSounds mentés", e);
+      }
+    }
+
+    function renderSoundpad() {
+      soundpadGrid.innerHTML = '';
+      // Alapértelmezett hangok
+      DEFAULT_SOUNDS.forEach(s => createSoundCard(s, false));
+      // Felhasználói hangok
+      customSounds.forEach(s => createSoundCard(s, true));
+    }
+
+    function createSoundCard(soundObj, editable) {
+      const card = document.createElement('div');
+      card.classList.add('sound-card');
+      card.dataset.soundId = soundObj.id;
+
+      const header = document.createElement('div');
+      header.classList.add('sound-card-header');
+      const imgEl = document.createElement('img');
+      imgEl.src = soundObj.img || '';
+      header.appendChild(imgEl);
+
+      const titleEl = document.createElement('div');
+      titleEl.classList.add('sound-card-title');
+      titleEl.innerText = soundObj.title || '';
+      header.appendChild(titleEl);
+
+      card.appendChild(header);
+
+      if (soundObj.desc) {
+        const descEl = document.createElement('div');
+        descEl.classList.add('sound-card-desc');
+        descEl.innerText = soundObj.desc;
+        card.appendChild(descEl);
+      }
+
+      const btnContainer = document.createElement('div');
+      btnContainer.classList.add('sound-card-buttons');
+
+      // Preview
+      const previewBtn = document.createElement('button');
+      previewBtn.classList.add('secondary','btn-icon');
+      previewBtn.innerText = "Preview";
+      previewBtn.addEventListener('click', ()=>{
+        playSound(soundObj.url, soundpadPreviewOutputSelect.value);
+      });
+      btnContainer.appendChild(previewBtn);
+
+      // Éles
+      const playBtn = document.createElement('button');
+      playBtn.classList.add('primary','btn-icon');
+      playBtn.innerText = "Lejátszás";
+      playBtn.addEventListener('click', ()=>{
+        playSound(soundObj.url, soundpadOutputSelect.value);
+      });
+      btnContainer.appendChild(playBtn);
+
+      if (editable) {
+        // Szerkesztés
+        const editBtn = document.createElement('button');
+        editBtn.classList.add('secondary','btn-icon');
+        editBtn.innerText = "Szerkesztés";
+        editBtn.addEventListener('click', ()=>{
+          startEditSound(soundObj.id);
+        });
+        btnContainer.appendChild(editBtn);
+
+        // Törlés
+        const delBtn = document.createElement('button');
+        delBtn.classList.add('secondary','btn-icon');
+        delBtn.innerText = "Törlés";
+        delBtn.addEventListener('click', ()=>{
+          deleteSound(soundObj.id);
+        });
+        btnContainer.appendChild(delBtn);
+      }
+
+      card.appendChild(btnContainer);
+      soundpadGrid.appendChild(card);
+    }
+
+    async function playSound(url, outputId) {
+      console.log("playSound(url=", url, ", outputId=", outputId, ")");
+      if (!url) return;
+
+      const audioForSound = new Audio(url);
+      if (audioForSound.setSinkId && outputId) {
+        try {
+          await audioForSound.setSinkId(outputId);
+          console.log("Audio sink beállítva (preview/éles):", outputId);
+        } catch(e) {
+          console.error("setSinkId hiba: ", e);
+        }
+      }
+      audioForSound.play().catch(e=>{
+        console.error("Sound lejátszási hiba: ", e);
+      });
+    }
+
+    function deleteSound(soundId) {
+      const idx = customSounds.findIndex(s => s.id === soundId);
+      if (idx>=0) {
+        if (confirm("Biztosan törlöd ezt a hangot?")) {
+          customSounds.splice(idx,1);
+          saveCustomSoundsToStorage();
+          renderSoundpad();
+        }
+      }
+    }
+
+    function startEditSound(soundId) {
+      const found = customSounds.find(s => s.id===soundId);
+      if (!found) return;
+      isEditing = true;
+      editingSoundId = soundId;
+      addSoundForm.classList.add('active');
+      addSoundFormTitle.innerText = "Hang szerkesztése";
+      saveSoundButton.innerText = "Mentés";
+      cancelEditButton.style.display = "inline-block";
+
+      soundTitleInput.value = found.title || '';
+      soundDescInput.value = found.desc || '';
+      // Kép
+      if (found.img && found.img.startsWith('data:')) {
+        // lokális base64
+        imageLocalRadio.checked = true;
+        updateImageSourceVisibility();
+        imgPreview.src = found.img;
+      } else {
+        // web
+        imageWebRadio.checked = true;
+        updateImageSourceVisibility();
+        soundImgInput.value = found.img || '';
+      }
+      // Hang
+      if (found.url && found.url.startsWith('data:')) {
+        soundLocalRadio.checked = true;
+        updateSoundSourceVisibility();
+      } else {
+        soundWebRadio.checked = true;
+        updateSoundSourceVisibility();
+        soundUrlInput.value = found.url || '';
+      }
+    }
+
+    toggleAddSoundBtn.addEventListener('click', ()=>{
+      isEditing = false;
+      editingSoundId = null;
+      addSoundFormTitle.innerText = "Új hang hozzáadása";
+      saveSoundButton.innerText = "Hozzáadás";
+      cancelEditButton.style.display = "none";
+
+      clearAddSoundForm();
+      addSoundForm.classList.toggle('active');
+    });
+
+    cancelEditButton.addEventListener('click', ()=>{
+      isEditing = false;
+      editingSoundId = null;
+      addSoundForm.classList.remove('active');
+    });
+
+    function clearAddSoundForm() {
+      soundTitleInput.value = '';
+      soundDescInput.value = '';
+      soundImgInput.value = '';
+      soundImgFileInput.value = '';
+      imgPreview.src = '';
+      soundUrlInput.value = '';
+      soundFileInput.value = '';
+    }
+
+    saveSoundButton.addEventListener('click', ()=>{
+      if (isEditing) {
+        saveEditedSound(editingSoundId);
+      } else {
+        addNewSound();
+      }
+    });
+
+    function addNewSound() {
+      const title = soundTitleInput.value.trim();
+      const desc = soundDescInput.value.trim();
+      if (!title) {
+        alert("A cím megadása kötelező!");
+        return;
+      }
+      let finalImg = '';
+      if (imageLocalRadio.checked && soundImgFileInput.files[0]) {
+        finalImg = imgPreview.src; 
+      } else {
+        finalImg = soundImgInput.value.trim();
+      }
+
+      let finalUrl = '';
+      if (soundLocalRadio.checked && soundFileInput.files[0]) {
+        const file = soundFileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = (ev)=>{
+          finalUrl = ev.target.result;
+          doCreateSound(title, desc, finalImg, finalUrl);
+        };
+        reader.readAsDataURL(file);
+      } else {
+        finalUrl = soundUrlInput.value.trim();
+        if (!finalUrl) {
+          alert("Hang URL vagy fájl kötelező!");
+          return;
+        }
+        doCreateSound(title, desc, finalImg, finalUrl);
+      }
+    }
+
+    function doCreateSound(title, desc, img, url) {
+      const newId = 'custom_'+Date.now();
+      const newSound = {id:newId, title, desc, img, url};
+      customSounds.push(newSound);
+      saveCustomSoundsToStorage();
+      renderSoundpad();
+
+      clearAddSoundForm();
+      addSoundForm.classList.remove('active');
+    }
+
+    function saveEditedSound(soundId) {
+      const found = customSounds.find(s=>s.id===soundId);
+      if (!found) return;
+
+      const title = soundTitleInput.value.trim();
+      const desc = soundDescInput.value.trim();
+      if (!title) {
+        alert("A cím megadása kötelező!");
+        return;
+      }
+      let finalImg = '';
+      if (imageLocalRadio.checked && soundImgFileInput.files[0]) {
+        finalImg = imgPreview.src; 
+      } else if (imageLocalRadio.checked && !soundImgFileInput.files[0] && imgPreview.src) {
+        finalImg = imgPreview.src; 
+      } else {
+        finalImg = soundImgInput.value.trim();
+      }
+
+      let finalUrl = '';
+      if (soundLocalRadio.checked && soundFileInput.files[0]) {
+        const file = soundFileInput.files[0];
+        const reader = new FileReader();
+        reader.onload = (ev)=>{
+          finalUrl = ev.target.result;
+          doSaveEditedSound(found, title, desc, finalImg, finalUrl);
+        };
+        reader.readAsDataURL(file);
+      } else if (soundLocalRadio.checked && !soundFileInput.files[0] && found.url.startsWith('data:')) {
+        // marad a régi base64
+        finalUrl = found.url;
+        doSaveEditedSound(found, title, desc, finalImg, finalUrl);
+      } else {
+        finalUrl = soundUrlInput.value.trim();
+        if (!finalUrl) {
+          alert("Hang URL vagy fájl kötelező!");
+          return;
+        }
+        doSaveEditedSound(found, title, desc, finalImg, finalUrl);
+      }
+    }
+
+    function doSaveEditedSound(found, title, desc, img, url) {
+      found.title = title;
+      found.desc = desc;
+      found.img = img;
+      found.url = url;
+      saveCustomSoundsToStorage();
+      renderSoundpad();
+      isEditing = false;
+      editingSoundId = null;
+      clearAddSoundForm();
+      addSoundForm.classList.remove('active');
+    }
+
+    // Radio gombok (kép/hang forrás)
+    imageWebRadio.addEventListener('change', updateImageSourceVisibility);
+    imageLocalRadio.addEventListener('change', updateImageSourceVisibility);
+    soundWebRadio.addEventListener('change', updateSoundSourceVisibility);
+    soundLocalRadio.addEventListener('change', updateSoundSourceVisibility);
+
+    function updateImageSourceVisibility() {
+      if (imageLocalRadio.checked) {
+        imageWebGroup.style.display = 'none';
+        imageLocalGroup.style.display = 'block';
+      } else {
+        imageWebGroup.style.display = 'block';
+        imageLocalGroup.style.display = 'none';
+      }
+    }
+    function updateSoundSourceVisibility() {
+      if (soundLocalRadio.checked) {
+        soundWebGroup.style.display = 'none';
+        soundLocalGroup.style.display = 'block';
+      } else {
+        soundWebGroup.style.display = 'block';
+        soundLocalGroup.style.display = 'none';
+      }
+    }
+
+    soundImgFileInput.addEventListener('change', (e)=>{
+      const file = e.target.files[0];
+      if (!file) {
+        imgPreview.src = '';
+        return;
+      }
+      const reader = new FileReader();
+      reader.onload = (ev)=>{
+        imgPreview.src = ev.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+    soundFileInput.addEventListener('change', (e)=>{
+      // Ha akarsz, ide is tehetsz preview-t
+    });
+
+    /***********************************************************************
+     * BEÁLLÍTÁSOK (Téma, Nyelv, Animációk, Discord auto)
+     ***********************************************************************/
+    const appThemeSelect = document.getElementById('app-theme');
+    const appLangSelect = document.getElementById('app-lang');
+    const appAnimSelect = document.getElementById('app-animation');
+    const appDiscordAutoSelect = document.getElementById('app-discordauto');
+    const saveSettingsBtn = document.getElementById('save-settings-btn');
+
+    let appSettings = {
+      theme: 'dark',
+      lang: 'hu',
+      animation: 'on',
+      discordAuto: 'off'
+    };
+
+    function loadSettings() {
+      try {
+        const data = localStorage.getItem('soundrSettings');
+        if (data) {
+          appSettings = JSON.parse(data);
+        }
+      } catch(e) {}
+      appThemeSelect.value = appSettings.theme;
+      appLangSelect.value = appSettings.lang;
+      appAnimSelect.value = appSettings.animation;
+      appDiscordAutoSelect.value = appSettings.discordAuto;
+      applyAppSettings();
+    }
+    function saveSettings() {
+      appSettings.theme = appThemeSelect.value;
+      appSettings.lang = appLangSelect.value;
+      appSettings.animation = appAnimSelect.value;
+      appSettings.discordAuto = appDiscordAutoSelect.value;
+      localStorage.setItem('soundrSettings', JSON.stringify(appSettings));
+      applyAppSettings();
+      alert("Beállítások elmentve.");
+    }
+    function applyAppSettings() {
+      // Téma
+      if (appSettings.theme === 'light') {
+        document.body.style.backgroundColor = '#f5f5f5';
+        document.body.style.color = '#000';
+      } else {
+        document.body.style.backgroundColor = '#101010';
+        document.body.style.color = '#f0f0f0';
+      }
+      // Animációk
+      if (appSettings.animation === 'off') {
+        document.documentElement.style.setProperty('--fadeIn', 'none');
+        document.documentElement.style.setProperty('--transition', 'none');
+      } else {
+        document.documentElement.style.removeProperty('--fadeIn');
+        document.documentElement.style.removeProperty('--transition');
+      }
+      // Discord auto-join (demó)
+      if (appSettings.discordAuto === 'on') {
+        console.log("Discord auto-join bekapcsolva (demó).");
+      }
+    }
+
+    saveSettingsBtn.addEventListener('click', saveSettings);
+  </script>
+</body>
+</html>
