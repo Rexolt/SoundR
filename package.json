@@ -1,18 +1,69 @@
 {
   "name": "soundr",
-  "productName": "soundr",
+  "productName": "SoundR",
   "version": "1.0.0",
-  "description": "soundr",
+  "description": "SoundR - Hangtorzító és Soundpad alkalmazás",
   "main": "src/index.js",
-  "win": {
-      "icon": "build/icon.ico" 
-    },
+  "author": "Rexolt <157226862+Rexolt@users.noreply.github.com>",
+  "license": "MIT",
+  "keywords": [
+    "electron",
+    "sound",
+    "hangtorzító",
+    "soundpad"
+  ],
   "scripts": {
     "start": "electron-forge start",
     "package": "electron-forge package",
     "make": "electron-forge make",
-    "publish": "electron-forge publish",
     "lint": "echo \"No linting configured\""
+  },
+  "config": {
+    "forge": {
+      "packagerConfig": {
+        "icon": "build/icon"
+      },
+      "makers": [
+        {
+          "name": "@electron-forge/maker-squirrel",
+          "config": {
+            "name": "soundr",
+            "setupIcon": "build/icon.ico",
+            "setupExe": "SoundRSetup.exe",
+            "setupMsi": "SoundRSetup.msi"
+          }
+        },
+        {
+          "name": "@electron-forge/maker-zip",
+          "platforms": [
+            "darwin"
+          ]
+        },
+        {
+          "name": "@electron-forge/maker-deb",
+          "config": {
+            "options": {
+              "maintainer": "Rexolt <157226862+Rexolt@users.noreply.github.com>",
+              "homepage": "https://example.com",
+              "section": "sound",
+              "priority": "optional"
+            }
+          }
+        },
+        {
+          "name": "@electron-forge/maker-rpm",
+          "config": {
+            "options": {
+              "maintainer": "Rexolt <157226862+Rexolt@users.noreply.github.com>",
+              "homepage": "https://example.com"
+            }
+          }
+        }
+      ]
+    }
+  },
+  "dependencies": {
+    "electron-squirrel-startup": "^1.0.1"
   },
   "devDependencies": {
     "@electron-forge/cli": "^7.6.0",
@@ -20,19 +71,6 @@
     "@electron-forge/maker-rpm": "^7.6.0",
     "@electron-forge/maker-squirrel": "^7.6.0",
     "@electron-forge/maker-zip": "^7.6.0",
-    "@electron-forge/plugin-auto-unpack-natives": "^7.6.0",
-    "@electron-forge/plugin-fuses": "^7.6.0",
-    "@electron/fuses": "^1.8.0",
-    "electron": "33.2.1",
-    "electron-builder": "^25.1.8"
-  },
-  "keywords": [],
-  "author": {
-    "name": "Rexolt",
-    "email": "157226862+Rexolt@users.noreply.github.com"
-  },
-  "license": "MIT",
-  "dependencies": {
-    "electron-squirrel-startup": "^1.0.1"
+    "electron": "^33.2.1"
   }
 }
