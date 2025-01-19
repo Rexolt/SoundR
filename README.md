@@ -1,6 +1,8 @@
 # 🎵 SoundR: Hangtorzító és Soundpad 🎵
 ![SoundR Logo](https://i.imgur.com/H1ZoSEV.png)
 
+We're sorry to tell... The project is no more maintaned.
+
 **SoundR** egy modern hangtorzító és soundpad alkalmazás, amely lehetővé teszi, hogy valós időben torzítsd a hangodat és testre szabott hangokat játssz le. Tökéletes hívásokhoz, élő közvetítésekhez és szórakozáshoz!
 
 ---
